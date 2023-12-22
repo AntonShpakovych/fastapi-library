@@ -5,5 +5,5 @@ from config import SQLALCHEMY_DATABASE_URL as SECRET_DATABASE_URL
 
 
 SQLALCHEMY_DATABASE_URL = SECRET_DATABASE_URL
-engine = create_async_engine(SQLALCHEMY_DATABASE_URL, echo=True)
-AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
+async_engine = create_async_engine(SQLALCHEMY_DATABASE_URL, echo=True)
+async_session_local = async_sessionmaker(async_engine, expire_on_commit=False)

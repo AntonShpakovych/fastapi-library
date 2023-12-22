@@ -7,7 +7,10 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-from src.book import models
+from src.book import models as book_models
+from src.auth import models as user_models
+from src.models import Base
+
 from config import SQLALCHEMY_DATABASE_URL
 
 # this is the Alembic Config object, which provides
@@ -24,7 +27,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = models.Base.metadata
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

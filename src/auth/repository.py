@@ -15,11 +15,11 @@ class UserRepository:
 
         return user
 
-    async def get(self, identifier: str) -> User | None:
+    async def get(self, identifier: str | int) -> User | None:
         stmt = (
             select(User)
-            .filter(User.id == int(identifier))
-            if identifier.isdigit()
+            .filter(User.id == identifier)
+            if isinstance(identifier, int)
             else select(User).filter(User.email == identifier)
         )
 

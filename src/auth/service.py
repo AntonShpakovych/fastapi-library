@@ -19,7 +19,7 @@ class UserService:
         if await self.__is_user_exists_by_email(email=user.email):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="User with this username already exists"
+                detail="User with this email already exists"
             )
         hashed_password = pwd_context.hash(user.hashed_password)
         user.hashed_password = hashed_password

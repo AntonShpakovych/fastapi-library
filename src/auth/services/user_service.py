@@ -2,10 +2,10 @@ from passlib.context import CryptContext
 
 from fastapi import Depends, HTTPException, status
 
-
-from src.auth.repository import UserRepository
 from src.auth.schemas import UserInDTO
 from src.auth.models import User
+from src.auth import messages
+from src.auth.repositories.user_repository import UserRepository
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -19,7 +19,7 @@ class UserService:
         if await self.__is_user_exists_by_email(email=user.email):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="User with this email already exists"
+                detail=messages.USER_EMAIL_ALREADY_EXISTS
             )
         hashed_password = pwd_context.hash(user.hashed_password)
         user.hashed_password = hashed_password

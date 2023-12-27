@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
 from src.auth.schemas import UserInDTO, UserOutDTO
-from src.auth.service import UserService
+from src.auth.services.user_service import UserService
 
 
 router = APIRouter()

@@ -3,6 +3,7 @@ from pydantic import BaseModel, EmailStr, Field
 
 class UserDTO(BaseModel):
     email: EmailStr
+    is_superuser: bool
 
 
 class UserInDTO(UserDTO):

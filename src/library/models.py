@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 from typing import Annotated
 
 from sqlalchemy import ForeignKey, text, UniqueConstraint
@@ -20,7 +20,8 @@ class Genre(Base):
     id: Mapped[int_pk]
     name: Mapped[str] = mapped_column(unique=True, index=True)
     books: Mapped[list["Book"]] = relationship(
-        back_populates="genre"
+        back_populates="genres",
+        secondary="books_genres"
     )
 
 
@@ -50,21 +51,11 @@ class Book(Base):
 
     id: Mapped[int_pk]
     title: Mapped[str] = mapped_column(index=True, unique=True)
-    file_path: Mapped[str]
-    date_published: Mapped[datetime] = mapped_column(
-        server_default=text(
-            "TIMEZONE('utc', now())"
-        )
-    )
-    genre_id: Mapped[int] = mapped_column(
-        ForeignKey(
-            "genres.id",
-            ondelete="CASCADE"
-        )
-    )
-
-    genre: Mapped["Genre"] = relationship(
-        back_populates="books"
+    filename: Mapped[str] = mapped_column(nullable=True)
+    date_published: Mapped[date]
+    genres: Mapped[list["Genre"]] = relationship(
+        back_populates="books",
+        secondary="books_genres"
     )
     authors: Mapped[list["Author"]] = relationship(
         back_populates="books",
@@ -78,6 +69,25 @@ class BookAuthor(Base):
     author_id: Mapped[int] = mapped_column(
         ForeignKey(
             "authors.id",
+            ondelete="CASCADE"
+        ),
+        primary_key=True
+    )
+    book_id: Mapped[int] = mapped_column(
+        ForeignKey(
+            "books.id",
+            ondelete="CASCADE"
+        ),
+        primary_key=True
+    )
+
+
+class BookGenre(Base):
+    __tablename__ = "books_genres"
+
+    genre_id: Mapped[int] = mapped_column(
+        ForeignKey(
+            "genres.id",
             ondelete="CASCADE"
         ),
         primary_key=True

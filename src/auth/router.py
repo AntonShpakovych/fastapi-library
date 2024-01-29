@@ -7,9 +7,11 @@ from src.auth.dependencies import (
     UserServiceDep,
     TokenServiceDep
 )
-from src.auth.schemas import (
+from src.auth.schemas.user import (
     UserInDTO,
     UserOutDTO,
+)
+from src.auth.schemas.token import (
     TokenRefreshDTO,
     TokenAccessRefreshDTO,
     TokenAccessDTO

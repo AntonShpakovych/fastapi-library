@@ -7,8 +7,8 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-from src.book import models as book_models
 from src.auth import models as user_models
+from src.library import models as library_models
 from src.models import Base
 
 from config import SQLALCHEMY_DATABASE_URL

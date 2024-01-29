@@ -14,7 +14,7 @@ from config import (
 )
 
 from src.auth.messages import errors
-from src.auth.schemas import TokenDataDTO
+from src.auth.schemas.token import TokenDataDTO
 
 
 class TokenService:

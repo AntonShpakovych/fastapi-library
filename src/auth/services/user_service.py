@@ -3,8 +3,8 @@ from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
-from src.auth.schemas import UserInDTO
 from src.auth.models import User
+from src.auth.schemas.user import UserInDTO
 from src.auth.messages import errors
 from src.auth.services.token_service import TokenService
 from src.auth.repositories.user_repository import UserRepository
@@ -15,7 +15,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/token")
 
 
 class UserService:
-    def __init__(self, repository: UserRepository = Depends()) -> None:
+    def __init__(self, repository: UserRepository) -> None:
         self.repository = repository
 
     async def register_user(self, user: UserInDTO) -> User:
@@ -27,7 +27,7 @@ class UserService:
 
         user.hashed_password = self.hash_password(user.hashed_password)
 
-        return await self.repository.create(User(**user.model_dump()))
+        return await self.repository.create(user=User(**user.model_dump()))
 
     async def get_current_user(
             self,
@@ -71,8 +71,8 @@ class UserService:
     ) -> bool:
         return pwd_context.verify(plain_password, hashed_password)
 
-    async def get_user_by_email(self, email: str) -> User:
-        return await self.repository.get(identifier=email)
+    async def get_user_by_email(self, email: str) -> User | None:
+        return await self.repository.get_one(identifier=email)
 
     def hash_password(self, plain_password: str) -> str:
         return pwd_context.hash(plain_password)

@@ -26,6 +26,29 @@ services:
         volumes:
             - db_data:/var/lib/postgresql/data/
         restart: always
+    redis:
+        image: redis
+        container_name: redis_service
+        ports:
+            - "6379:6379"
+        restart: always
+    celery_worker:
+        build:
+            context: .
+        container_name: celery_worker_service
+        volumes:
+            - ./:/app
+        entrypoint: celery
+        command:
+            -A celery_config.app worker -l info
+        env_file:
+            - .env
+        links:
+            - redis
+        depends_on:
+            - redis
+            - app
+        restart: always
 volumes:
     db_data:
         driver: local

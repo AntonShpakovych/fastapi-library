@@ -1,13 +1,10 @@
 from sqlalchemy import select
 
-from src.dependencies import AsyncSession
 from src.auth.models import User
+from src.helpers.base_repository import BaseRepository
 
 
-class UserRepository:
-    def __init__(self, db: AsyncSession) -> None:
-        self.db = db
-
+class UserRepository(BaseRepository):
     async def create(self, user: User) -> User:
         self.db.add(user)
         await self.db.commit()
@@ -15,7 +12,7 @@ class UserRepository:
 
         return user
 
-    async def get(self, identifier: str | int) -> User | None:
+    async def get_one(self, identifier: str | int) -> User | None:
         stmt = (
             select(User)
             .filter(User.id == identifier)
@@ -27,3 +24,19 @@ class UserRepository:
         user = result.scalar_one_or_none()
 
         return user
+
+    async def get_all(self) -> list[User]:
+        stmt = select(User).order_by(User.id)
+
+        result = await self.db.execute(stmt)
+        users = result.scalars().all()
+
+        return users
+
+    async def update(self, user_id: int, new_user: User) -> User:
+        new_user.id = user_id
+
+        await self.db.merge(new_user)
+        await self.db.commit()
+
+        return new_user

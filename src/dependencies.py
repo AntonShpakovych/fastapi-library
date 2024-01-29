@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession as AsyncLocalSession
 
 from fastapi import Depends
 
+
 from src.database import async_session_local
 
 

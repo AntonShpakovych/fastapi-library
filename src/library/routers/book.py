@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from starlette import status
-from starlette.responses import Response
+from fastapi.responses import Response, HTMLResponse
 
 from src.auth.dependencies import admin_current_user, current_user
 from src.library.dependencies import (
@@ -10,7 +10,7 @@ from src.library.dependencies import (
     GenreServiceDep,
     BookPDFFile, S3ServiceDep
 )
-from src.library.messages import responses
+from src.library.messages import responses, errors
 from src.library.schemas.author import AuthorOutDTO
 from src.library.schemas.book import (
     BookOutDTO,
@@ -18,7 +18,7 @@ from src.library.schemas.book import (
     BookInCreateDTO,
     BookInUpdateDTO
 )
-
+from src.library.services.pdf_to_html_service import PDFToHTMLService
 from src.library.schemas.genre import GenreOutDTO
 from src.library.tasks import upload_book_file_to_s3
 
@@ -161,7 +161,7 @@ async def upload_file_for_book(
         book_service: BookServiceDep,
         file: BookPDFFile
 ):
-    book = await book_service.is_book_valid_for_upload_file(book_id=book_id)
+    book = await book_service.get_book_without_file(book_id=book_id)
 
     filename = file.filename
     file = await file.read()
@@ -176,20 +176,41 @@ async def upload_file_for_book(
 
 
 @router.get("/{book_id}/pdf", dependencies=[Depends(current_user)])
-async def download_file_for_book(
+async def download_book_file(
     book_id: int,
     s3_service: S3ServiceDep,
     book_service: BookServiceDep
 ):
-    book = await book_service.get_book(identifier=book_id)
+    book = await book_service.get_book_with_file(book_id=book_id)
 
-    response = s3_service.download_file(filename=book.filename)
-    body = response["Body"].read()
+    if book.read_only:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=errors.BOOK_IS_READ_ONLY
+        )
+
+    file_bytes = s3_service.download_file(filename=book.filename)
+
     headers = {
         "Content-Disposition": f"attachment; filename={book.filename}",
     }
     return Response(
-        content=body,
+        content=file_bytes,
         headers=headers,
         media_type="application/pdf",
     )
+
+
+@router.get("/{book_id}/html", dependencies=[Depends(current_user)])
+async def to_html_book_file(
+    book_id: int,
+    s3_service: S3ServiceDep,
+    book_service: BookServiceDep
+):
+    book = await book_service.get_book_with_file(book_id=book_id)
+    file_bytes = s3_service.download_file(filename=book.filename)
+
+    pdf_to_html_service = PDFToHTMLService(pdf_bytes=file_bytes)
+    html_content = pdf_to_html_service.generate_html()
+
+    return HTMLResponse(content=html_content)

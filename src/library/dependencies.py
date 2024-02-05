@@ -3,6 +3,7 @@ from typing import Annotated
 import filetype
 
 from fastapi import Depends, UploadFile, HTTPException
+from starlette import status
 
 from src.library.messages import errors
 from src.library.repositories.author_repository import AuthorRepository
@@ -62,14 +63,27 @@ def get_book_pdf_file(file: UploadFile) -> UploadFile:
 
     if file_type is None or file_type.extension.lower() != "pdf":
         raise HTTPException(
-            status_code=415,
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
             detail=errors.BOOK_FILE_HAS_UNSUPPORTED_FILE_TYPE
         )
-
     return file
 
 
 BookPDFFile = Annotated[UploadFile, Depends(get_book_pdf_file)]
+
+
+def get_denied_xls_file(file: UploadFile) -> UploadFile:
+    file_type = filetype.guess(file.file)
+
+    if file_type is None or file_type.extension.lower() != "xlsx":
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail=errors.DENIED_LIST_FILE_HAS_UNSUPPORTED_FILE_TYPE
+        )
+    return file
+
+
+DeniedFileXLS = Annotated[UploadFile, Depends(get_denied_xls_file)]
 
 
 def get_s3_service() -> S3Service:

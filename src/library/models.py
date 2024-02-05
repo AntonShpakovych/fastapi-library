@@ -52,6 +52,7 @@ class Book(Base):
     id: Mapped[int_pk]
     title: Mapped[str] = mapped_column(index=True, unique=True)
     filename: Mapped[str] = mapped_column(nullable=True)
+    read_only: Mapped[bool] = mapped_column(server_default="f")
     date_published: Mapped[date]
     genres: Mapped[list["Genre"]] = relationship(
         back_populates="books",

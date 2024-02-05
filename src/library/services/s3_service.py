@@ -1,8 +1,7 @@
 import os
 
-from dotenv import load_dotenv
 import boto3
-
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -29,4 +28,7 @@ class S3Service:
         )
 
     def download_file(self, filename):
-        return self.s3_client.get_object(Bucket=self.bucket_name, Key=filename)
+        return self.s3_client.get_object(
+            Bucket=self.bucket_name,
+            Key=filename
+        )["Body"].read()

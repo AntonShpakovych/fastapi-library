@@ -44,16 +44,6 @@ class BookService:
             )
         )
 
-    async def is_book_valid_for_upload_file(self, book_id: int) -> Book:
-        book = await self.get_book(identifier=book_id)
-
-        if book.filename:
-            raise HTTPException(
-                detail=errors.BOOK_ALREADY_HAS_FILE,
-                status_code=400
-            )
-        return book
-
     async def delete_book(self, book_id: int) -> None:
         book = await self.get_book(identifier=book_id)
         await self.repository.delete(book=book)
@@ -76,14 +66,18 @@ class BookService:
     async def get_books(self) -> list[Book]:
         return await self.repository.get_all()
 
-    async def get_book(self, identifier: str | int) -> Book:
+    async def get_book(
+        self,
+        identifier: str | int,
+        raise_exception: bool = True
+    ) -> Book:
         book = (
             await self._get_book_by_title(title=identifier)
             if isinstance(identifier, str)
             else await self._get_book_by_id(book_id=identifier)
         )
 
-        if not book:
+        if not book and raise_exception:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=errors.BOOK_DOESNT_EXIST
@@ -148,3 +142,23 @@ class BookService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=errors.BOOK_TITLE_ALREADY_EXISTS
             )
+
+    async def get_book_with_file(self, book_id: int) -> Book:
+        book = await self.get_book(identifier=book_id)
+
+        if not book.filename:
+            raise HTTPException(
+                detail=errors.BOOK_DOESNT_HAVE_FILE,
+                status_code=status.HTTP_400_BAD_REQUEST
+            )
+        return book
+
+    async def get_book_without_file(self, book_id: int) -> Book:
+        book = await self.get_book(identifier=book_id)
+
+        if book.filename:
+            raise HTTPException(
+                detail=errors.BOOK_ALREADY_HAS_FILE,
+                status_code=status.HTTP_400_BAD_REQUEST
+            )
+        return book

@@ -28,6 +28,14 @@ class BookUploadFileDTO(BookInUpdateDTO):
         from_attributes = True
 
 
+class BookReadOnlyDTO(BookInUpdateDTO):
+    id: int
+    read_only: bool
+
+    class Config:
+        from_attributes = True
+
+
 class BookOutDTO(BookDTO):
     title: str
 

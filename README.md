@@ -32,3 +32,7 @@
     4) docker compose up --build
 ```
 <hr>
+
+
+## What this project can do
+This service can store book files on S3, extract a pdf file of a book or HTML, and accept a csv file that will indicate which book can only be obtained through HTML.
